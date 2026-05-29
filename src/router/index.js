@@ -4,11 +4,19 @@ import ProfessionnelsPage from '../pages/ProfessionnelsPage.vue'
 import ParticuliersPage from '../pages/ParticuliersPage.vue'
 import ContactPage from '../pages/ContactPage.vue'
 import AProposPage from '../pages/AProposPage.vue'
+import CreationEntrepriseForm from '../pages/professionnels/CreationEntrepriseForm.vue'
+import OptimisationFiscaleForm from '../pages/professionnels/OptimisationFiscaleForm.vue'
+import ConseilNegoceForm from '../pages/professionnels/ConseilNegoceForm.vue'
+import ApportAffairesForm from '../pages/professionnels/ApportAffairesForm.vue'
 
 const routes = [
   { path: '/', component: HomePage },
   { path: '/a-propos', component: AProposPage },
   { path: '/professionnels', component: ProfessionnelsPage },
+  { path: '/professionnels/creation-entreprise', component: CreationEntrepriseForm },
+  { path: '/professionnels/optimisation-fiscale', component: OptimisationFiscaleForm },
+  { path: '/professionnels/conseil-negoce', component: ConseilNegoceForm },
+  { path: '/professionnels/apport-affaires', component: ApportAffairesForm },
   { path: '/particuliers', component: ParticuliersPage },
   { path: '/contact', component: ContactPage },
   { path: '/:pathMatch(.*)*', redirect: '/' },

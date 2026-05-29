@@ -1,5 +1,30 @@
 <script setup>
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const services = [
+  { num: '01', icon: '🏛️', title: "Création d'entreprise",
+    desc: "Accompagnement complet dans la création et les démarches administratives de votre société. Choix du statut juridique, rédaction des statuts, immatriculation, ouverture de comptes — nous gérons l'ensemble du processus.",
+    tags: ['SARL / SAS', 'Auto-entrepreneur', 'Statuts', 'Immatriculation'],
+    route: '/professionnels/creation-entreprise', delay: '' },
+  { num: '02', icon: '📊', title: "Optimisation fiscale & comptable",
+    desc: "Conseil en optimisation fiscale et comptable pour maximiser la performance financière de votre entreprise. Nous analysons votre situation et identifions les leviers d'optimisation adaptés.",
+    tags: ['Fiscalité', 'Comptabilité', 'TVA', 'IS / IR'],
+    route: '/professionnels/optimisation-fiscale', delay: 'delay-1' },
+  { num: '03', icon: '🤝', title: "Conseil en négoce",
+    desc: "Expertise stratégique dans le négoce et les transactions commerciales complexes. Structuration des opérations commerciales, négociation de contrats, sécurisation des transactions import/export.",
+    tags: ['Import / Export', 'Contrats', 'Stratégie commerciale'],
+    route: '/professionnels/conseil-negoce', delay: 'delay-1' },
+  { num: '04', icon: '🚀', title: "Apport d'affaires",
+    desc: "Mise en relation et développement de partenariats pour accélérer votre croissance. Notre réseau permet d'identifier les opportunités pertinentes et de structurer des partenariats durables.",
+    tags: ['Mise en relation', 'Partenariats', 'Développement'],
+    route: '/professionnels/apport-affaires', delay: 'delay-2' },
+]
+
+function go(path) {
+  router.push(path)
+}
 
 onMounted(() => {
   const obs = new IntersectionObserver((entries) => {
@@ -20,33 +45,18 @@ onMounted(() => {
         <p>De la création de votre structure à l'optimisation de sa performance, Papers Biz vous accompagne à chaque étape de votre développement.</p>
       </div>
       <div class="pro-grid">
-        <div class="pro-card reveal">
-          <div class="pro-card-num">01</div>
-          <span class="pro-card-icon">🏛️</span>
-          <div class="pro-card-title">Création d'entreprise</div>
-          <p class="pro-card-desc">Accompagnement complet dans la création et les démarches administratives de votre société. Choix du statut juridique, rédaction des statuts, immatriculation, ouverture de comptes — nous gérons l'ensemble du processus.</p>
-          <div class="pro-card-tags"><span class="pro-tag">SARL / SAS</span><span class="pro-tag">Auto-entrepreneur</span><span class="pro-tag">Statuts</span><span class="pro-tag">Immatriculation</span></div>
-        </div>
-        <div class="pro-card reveal delay-1">
-          <div class="pro-card-num">02</div>
-          <span class="pro-card-icon">📊</span>
-          <div class="pro-card-title">Optimisation fiscale &amp; comptable</div>
-          <p class="pro-card-desc">Conseil en optimisation fiscale et comptable pour maximiser la performance financière de votre entreprise. Nous analysons votre situation et identifions les leviers d'optimisation adaptés.</p>
-          <div class="pro-card-tags"><span class="pro-tag">Fiscalité</span><span class="pro-tag">Comptabilité</span><span class="pro-tag">TVA</span><span class="pro-tag">IS / IR</span></div>
-        </div>
-        <div class="pro-card reveal delay-1">
-          <div class="pro-card-num">03</div>
-          <span class="pro-card-icon">🤝</span>
-          <div class="pro-card-title">Conseil en négoce</div>
-          <p class="pro-card-desc">Expertise stratégique dans le négoce et les transactions commerciales complexes. Structuration des opérations commerciales, négociation de contrats, sécurisation des transactions import/export.</p>
-          <div class="pro-card-tags"><span class="pro-tag">Import / Export</span><span class="pro-tag">Contrats</span><span class="pro-tag">Stratégie commerciale</span></div>
-        </div>
-        <div class="pro-card reveal delay-2">
-          <div class="pro-card-num">04</div>
-          <span class="pro-card-icon">🚀</span>
-          <div class="pro-card-title">Apport d'affaires</div>
-          <p class="pro-card-desc">Mise en relation et développement de partenariats pour accélérer votre croissance. Notre réseau permet d'identifier les opportunités pertinentes et de structurer des partenariats durables.</p>
-          <div class="pro-card-tags"><span class="pro-tag">Mise en relation</span><span class="pro-tag">Partenariats</span><span class="pro-tag">Développement</span></div>
+        <div v-for="s in services" :key="s.num"
+          class="pro-card clickable reveal" :class="s.delay"
+          role="link" tabindex="0"
+          @click="go(s.route)" @keyup.enter="go(s.route)">
+          <div class="pro-card-num">{{ s.num }}</div>
+          <span class="pro-card-icon">{{ s.icon }}</span>
+          <div class="pro-card-title">{{ s.title }}</div>
+          <p class="pro-card-desc">{{ s.desc }}</p>
+          <div class="pro-card-tags">
+            <span v-for="t in s.tags" :key="t" class="pro-tag">{{ t }}</span>
+          </div>
+          <div class="pro-card-cta">Démarrer ma demande &rarr;</div>
         </div>
       </div>
     </section>
