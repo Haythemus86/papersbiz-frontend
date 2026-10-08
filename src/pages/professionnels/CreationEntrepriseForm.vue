@@ -1,9 +1,12 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { submitRequest } from '../../services/api.js'
 
 const router = useRouter()
 const submitted = ref(false)
+const submitting = ref(false)
+const errorMessage = ref('')
 
 const form = reactive({
   // Demandeur
@@ -14,6 +17,12 @@ const form = reactive({
   telephone: '',
   dateNaissance: '',
   nationalite: 'Française',
+  affiliationGerant: {
+    nomPere: '',
+    prenomPere: '',
+    nomNaissanceMere: '',
+    prenomMere: '',
+  },
   adresse: '',
   codePostal: '',
   ville: '',
@@ -25,7 +34,6 @@ const form = reactive({
   descriptionActivite: '',
   dateDemarrage: '',
   villeSiege: '',
-  domiciliationSouhaitee: '',
 
   // Structure
   formeJuridique: '',
@@ -33,10 +41,6 @@ const form = reactive({
   nombreAssocies: 1,
   regimeFiscal: '',
   regimeTva: '',
-  regimeSocialDirigeant: '',
-
-  // Prestations
-  prestations: [],
 
   // Commentaire
   commentaire: '',
@@ -49,24 +53,40 @@ const secteurs = [
   'Immobilier', 'Transport / Logistique', 'E-commerce', 'Autre',
 ]
 const formes = ['SARL', 'EURL', 'SAS', 'SASU', 'SA', 'SCI', 'Micro-entreprise', 'Entreprise individuelle']
-const prestationsList = [
-  'Rédaction des statuts', 'Dépôt de capital', 'Annonce légale',
-  'Immatriculation (greffe)', 'Domiciliation commerciale',
-  'Ouverture de compte bancaire pro', 'Comptabilité', 'Conseil juridique',
+const regimesFiscaux = [
+  'IS — Impôt sur les sociétés',
+  'IR — Impôt sur le revenu',
+  'Micro-fiscal',
 ]
-
-function toggle(field, value) {
-  const arr = form[field]
-  const i = arr.indexOf(value)
-  if (i === -1) arr.push(value); else arr.splice(i, 1)
+const regimeFiscalParForme = {
+  SARL: 'IS — Impôt sur les sociétés',
+  EURL: 'IR — Impôt sur le revenu',
+  SAS: 'IS — Impôt sur les sociétés',
+  SASU: 'IS — Impôt sur les sociétés',
+  SA: 'IS — Impôt sur les sociétés',
+  SCI: 'IR — Impôt sur le revenu',
+  'Micro-entreprise': 'Micro-fiscal',
+  'Entreprise individuelle': 'IR — Impôt sur le revenu',
 }
 
-function submit() {
-  // TODO: POST /api/requests/creation-entreprise
-  const payload = { type: 'creation_entreprise', createdAt: new Date().toISOString(), data: { ...form } }
-  console.log('[PapersBiz] Submission', payload)
-  submitted.value = true
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+watch(() => form.formeJuridique, (formeJuridique) => {
+  form.regimeFiscal = regimeFiscalParForme[formeJuridique] || ''
+})
+
+async function submit() {
+  if (submitting.value) return
+  submitting.value = true
+  errorMessage.value = ''
+
+  try {
+    await submitRequest('CREATION_ENTREPRISE', form)
+    submitted.value = true
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  } catch (error) {
+    errorMessage.value = error.message
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 
@@ -98,13 +118,13 @@ function submit() {
             <div class="svc-section-num">01.</div>
             <div>
               <div class="svc-section-title">Vos coordonnées</div>
-              <div class="svc-section-sub">Le fondateur ou le représentant du projet.</div>
+              <div class="svc-section-sub">Coordonnées du gérant ou du représentant légal.</div>
             </div>
           </div>
           <div class="svc-grid">
             <div class="form-group">
               <label class="form-label">Civilité<span class="svc-required">*</span></label>
-              <select v-model="form.civilite" class="form-select" required>
+              <select v-model="form.civilite" name="civilite" class="form-select" required>
                 <option value="">—</option><option>M.</option><option>Mme</option>
               </select>
             </div>
@@ -114,19 +134,19 @@ function submit() {
             </div>
             <div class="form-group">
               <label class="form-label">Nom<span class="svc-required">*</span></label>
-              <input v-model="form.nom" class="form-input" type="text" required />
+              <input v-model="form.nom" name="nom" class="form-input" type="text" required />
             </div>
             <div class="form-group">
               <label class="form-label">Prénom<span class="svc-required">*</span></label>
-              <input v-model="form.prenom" class="form-input" type="text" required />
+              <input v-model="form.prenom" name="prenom" class="form-input" type="text" required />
             </div>
             <div class="form-group">
               <label class="form-label">Email<span class="svc-required">*</span></label>
-              <input v-model="form.email" class="form-input" type="email" required />
+              <input v-model="form.email" name="email" class="form-input" type="email" required />
             </div>
             <div class="form-group">
               <label class="form-label">Téléphone<span class="svc-required">*</span></label>
-              <input v-model="form.telephone" class="form-input" type="tel" required />
+              <input v-model="form.telephone" name="telephone" class="form-input" type="tel" required />
             </div>
             <div class="form-group">
               <label class="form-label">Date de naissance</label>
@@ -139,6 +159,28 @@ function submit() {
             <div class="form-group">
               <label class="form-label">Code postal</label>
               <input v-model="form.codePostal" class="form-input" type="text" />
+            </div>
+            <div class="affiliation-box svc-full">
+              <div class="affiliation-box-title">Affiliation du gérant</div>
+              <div class="affiliation-box-sub">Pour l’affiliation du gérant, renseignez le nom et le prénom de ses parents. Le nom de naissance de la mère correspond à son nom de jeune fille.</div>
+              <div class="affiliation-box-grid">
+                <div class="form-group">
+                  <label class="form-label">Nom du père<span class="svc-required">*</span></label>
+                  <input v-model="form.affiliationGerant.nomPere" name="nomPere" class="form-input" type="text" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Prénom du père<span class="svc-required">*</span></label>
+                  <input v-model="form.affiliationGerant.prenomPere" name="prenomPere" class="form-input" type="text" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Nom de naissance de la mère<span class="svc-required">*</span></label>
+                  <input v-model="form.affiliationGerant.nomNaissanceMere" name="nomNaissanceMere" class="form-input" type="text" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Prénom de la mère<span class="svc-required">*</span></label>
+                  <input v-model="form.affiliationGerant.prenomMere" name="prenomMere" class="form-input" type="text" required />
+                </div>
+              </div>
             </div>
             <div class="form-group">
               <label class="form-label">Ville</label>
@@ -158,7 +200,7 @@ function submit() {
           <div class="svc-grid">
             <div class="form-group">
               <label class="form-label">Dénomination souhaitée<span class="svc-required">*</span></label>
-              <input v-model="form.nomEntreprise" class="form-input" type="text" required />
+              <input v-model="form.nomEntreprise" name="nomEntreprise" class="form-input" type="text" required />
             </div>
             <div class="form-group">
               <label class="form-label">Alternative (au cas où)</label>
@@ -166,7 +208,7 @@ function submit() {
             </div>
             <div class="form-group">
               <label class="form-label">Secteur d'activité<span class="svc-required">*</span></label>
-              <select v-model="form.secteurActivite" class="form-select" required>
+              <select v-model="form.secteurActivite" name="secteurActivite" class="form-select" required>
                 <option value="">— Sélectionner —</option>
                 <option v-for="s in secteurs" :key="s">{{ s }}</option>
               </select>
@@ -177,22 +219,12 @@ function submit() {
             </div>
             <div class="form-group svc-full">
               <label class="form-label">Description de l'activité<span class="svc-required">*</span></label>
-              <textarea v-model="form.descriptionActivite" class="form-textarea" required
+              <textarea v-model="form.descriptionActivite" name="descriptionActivite" class="form-textarea" required
                 placeholder="Quels produits / services ? Quelle clientèle ?"></textarea>
             </div>
             <div class="form-group">
               <label class="form-label">Ville du siège social</label>
               <input v-model="form.villeSiege" class="form-input" type="text" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Type de domiciliation</label>
-              <select v-model="form.domiciliationSouhaitee" class="form-select">
-                <option value="">—</option>
-                <option>À mon domicile personnel</option>
-                <option>Local commercial / professionnel</option>
-                <option>Société de domiciliation</option>
-                <option>À définir avec le conseiller</option>
-              </select>
             </div>
           </div>
         </div>
@@ -208,7 +240,7 @@ function submit() {
           <div class="svc-grid">
             <div class="form-group">
               <label class="form-label">Forme juridique souhaitée</label>
-              <select v-model="form.formeJuridique" class="form-select">
+              <select v-model="form.formeJuridique" name="formeJuridique" class="form-select">
                 <option value="">— À conseiller —</option>
                 <option v-for="f in formes" :key="f">{{ f }}</option>
               </select>
@@ -223,11 +255,9 @@ function submit() {
             </div>
             <div class="form-group">
               <label class="form-label">Régime fiscal</label>
-              <select v-model="form.regimeFiscal" class="form-select">
+              <select v-model="form.regimeFiscal" name="regimeFiscal" class="form-select">
                 <option value="">— À conseiller —</option>
-                <option>IS — Impôt sur les sociétés</option>
-                <option>IR — Impôt sur le revenu</option>
-                <option>Micro-fiscal</option>
+                <option v-for="regime in regimesFiscaux" :key="regime">{{ regime }}</option>
               </select>
             </div>
             <div class="form-group">
@@ -239,47 +269,25 @@ function submit() {
                 <option>Réel normal</option>
               </select>
             </div>
-            <div class="form-group">
-              <label class="form-label">Régime social du dirigeant</label>
-              <select v-model="form.regimeSocialDirigeant" class="form-select">
-                <option value="">— À conseiller —</option>
-                <option>Assimilé salarié</option>
-                <option>Travailleur non salarié (TNS)</option>
-              </select>
-            </div>
           </div>
         </div>
 
         <div class="svc-section">
-          <div class="svc-section-head">
-            <div class="svc-section-num">04.</div>
-            <div>
-              <div class="svc-section-title">Prestations souhaitées</div>
-              <div class="svc-section-sub">Cochez tout ce qui vous intéresse.</div>
-            </div>
-          </div>
-          <div class="svc-check-group">
-            <label v-for="p in prestationsList" :key="p"
-              class="svc-chip" :class="{ checked: form.prestations.includes(p) }">
-              <input type="checkbox" :checked="form.prestations.includes(p)" @change="toggle('prestations', p)" />
-              {{ p }}
-            </label>
-          </div>
-          <div class="form-group svc-full" style="margin-top:24px;">
+          <div class="form-group svc-full">
             <label class="form-label">Commentaire libre</label>
             <textarea v-model="form.commentaire" class="form-textarea"
               placeholder="Toute information utile à votre dossier"></textarea>
           </div>
-        </div>
-
-        <div class="svc-section">
           <label class="svc-chip" :class="{ checked: form.consentement }" style="display:flex;">
-            <input type="checkbox" v-model="form.consentement" />
+            <input type="checkbox" name="consentement" v-model="form.consentement" />
             J'accepte d'être recontacté par Papers Biz au sujet de ma demande.
           </label>
+          <p v-if="errorMessage" class="form-error" role="alert">{{ errorMessage }}</p>
           <div class="svc-actions">
             <button type="button" class="btn-outline" @click="router.push('/professionnels')">Annuler</button>
-            <button type="submit" class="btn-gold" :disabled="!form.consentement">Envoyer ma demande &rarr;</button>
+            <button type="submit" class="btn-gold" :disabled="!form.consentement || submitting">
+              {{ submitting ? 'Envoi en cours...' : 'Envoyer ma demande →' }}
+            </button>
           </div>
         </div>
       </form>

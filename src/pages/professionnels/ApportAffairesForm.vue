@@ -1,9 +1,12 @@
 <script setup>
 import { reactive, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { submitRequest } from '../../services/api.js'
 
 const router = useRouter()
 const submitted = ref(false)
+const submitting = ref(false)
+const errorMessage = ref('')
 
 const form = reactive({
   // Rôle
@@ -65,11 +68,20 @@ function toggle(field, value) {
 const isApporteur = computed(() => form.role === 'apporteur')
 const isDemandeur = computed(() => form.role === 'demandeur')
 
-function submit() {
-  const payload = { type: 'apport_affaires', createdAt: new Date().toISOString(), data: { ...form } }
-  console.log('[PapersBiz] Submission', payload)
-  submitted.value = true
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+async function submit() {
+  if (submitting.value) return
+  submitting.value = true
+  errorMessage.value = ''
+
+  try {
+    await submitRequest('APPORT_AFFAIRES', form)
+    submitted.value = true
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  } catch (error) {
+    errorMessage.value = error.message
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 
@@ -320,9 +332,12 @@ function submit() {
             <input type="checkbox" v-model="form.consentement" />
             J'accepte que Papers Biz me recontacte pour étudier un partenariat.
           </label>
+          <p v-if="errorMessage" class="form-error" role="alert">{{ errorMessage }}</p>
           <div class="svc-actions">
             <button type="button" class="btn-outline" @click="router.push('/professionnels')">Annuler</button>
-            <button type="submit" class="btn-gold" :disabled="!form.consentement">Envoyer mon profil &rarr;</button>
+            <button type="submit" class="btn-gold" :disabled="!form.consentement || submitting">
+              {{ submitting ? 'Envoi en cours...' : 'Envoyer mon profil →' }}
+            </button>
           </div>
         </div>
       </form>

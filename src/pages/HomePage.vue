@@ -13,11 +13,7 @@ const proServices = [
     desc: "Conseil en optimisation fiscale et comptable pour maximiser la performance financière de votre entreprise. Nous analysons votre situation, identifions les leviers d'optimisation et vous proposons des stratégies adaptées à votre structure et à vos objectifs.",
     tags: ['Fiscalité', 'Comptabilité', 'TVA', 'IS / IR'],
     route: '/professionnels/optimisation-fiscale', delay: 'delay-1' },
-  { num: '03', icon: '🤝', title: "Conseil en négoce",
-    desc: "Expertise stratégique dans le négoce et les transactions commerciales complexes. Nous vous conseillons dans la structuration de vos opérations commerciales, la négociation de contrats et la sécurisation de vos transactions à l'import comme à l'export.",
-    tags: ['Import / Export', 'Contrats', 'Stratégie commerciale'],
-    route: '/professionnels/conseil-negoce', delay: 'delay-1' },
-  { num: '04', icon: '🚀', title: "Apport d'affaires",
+  { num: '03', icon: '🚀', title: "Apport d'affaires",
     desc: "Mise en relation et développement de partenariats pour accélérer votre croissance. Notre réseau et notre expertise permettent d'identifier les opportunités pertinentes, de faciliter les introductions et de structurer des partenariats durables au service de votre développement.",
     tags: ['Mise en relation', 'Partenariats', 'Développement'],
     route: '/professionnels/apport-affaires', delay: 'delay-2' },
@@ -94,10 +90,6 @@ useReveal()
         </div>
         <div class="hero-card-item">
           <div class="hci-num">03</div>
-          <div class="hci-text"><strong>Conseil en négoce</strong>Expertise dans les transactions commerciales complexes</div>
-        </div>
-        <div class="hero-card-item">
-          <div class="hci-num">04</div>
           <div class="hci-text"><strong>Particuliers</strong>Simplification de toutes vos démarches administratives</div>
         </div>
       </div>
@@ -251,7 +243,6 @@ useReveal()
             <option>Particulier — Démarche administrative</option>
             <option>Professionnel — Création d'entreprise</option>
             <option>Professionnel — Optimisation fiscale</option>
-            <option>Professionnel — Conseil en négoce</option>
             <option>Professionnel — Apport d'affaires</option>
           </select>
         </div>

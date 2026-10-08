@@ -23,7 +23,6 @@ import { RouterLink } from 'vue-router'
         <ul class="footer-links">
           <li><RouterLink to="/professionnels">Création d'entreprise</RouterLink></li>
           <li><RouterLink to="/professionnels">Optimisation fiscale</RouterLink></li>
-          <li><RouterLink to="/professionnels">Conseil en négoce</RouterLink></li>
           <li><RouterLink to="/professionnels">Apport d'affaires</RouterLink></li>
         </ul>
       </div>

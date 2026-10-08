@@ -1,9 +1,12 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { submitRequest } from '../../services/api.js'
 
 const router = useRouter()
 const submitted = ref(false)
+const submitting = ref(false)
+const errorMessage = ref('')
 
 const form = reactive({
   // Entreprise
@@ -59,11 +62,20 @@ function toggle(field, value) {
   if (i === -1) arr.push(value); else arr.splice(i, 1)
 }
 
-function submit() {
-  const payload = { type: 'optimisation_fiscale', createdAt: new Date().toISOString(), data: { ...form } }
-  console.log('[PapersBiz] Submission', payload)
-  submitted.value = true
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+async function submit() {
+  if (submitting.value) return
+  submitting.value = true
+  errorMessage.value = ''
+
+  try {
+    await submitRequest('OPTIMISATION_FISCALE', form)
+    submitted.value = true
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  } catch (error) {
+    errorMessage.value = error.message
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 
@@ -285,9 +297,12 @@ function submit() {
             <input type="checkbox" v-model="form.consentement" />
             J'autorise Papers Biz à traiter ces informations dans le cadre de ma demande.
           </label>
+          <p v-if="errorMessage" class="form-error" role="alert">{{ errorMessage }}</p>
           <div class="svc-actions">
             <button type="button" class="btn-outline" @click="router.push('/professionnels')">Annuler</button>
-            <button type="submit" class="btn-gold" :disabled="!form.consentement">Demander mon diagnostic &rarr;</button>
+            <button type="submit" class="btn-gold" :disabled="!form.consentement || submitting">
+              {{ submitting ? 'Envoi en cours...' : 'Demander mon diagnostic →' }}
+            </button>
           </div>
         </div>
       </form>

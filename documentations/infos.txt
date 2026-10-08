@@ -1,0 +1,6 @@
+formulaire de Création d'entreprise
+il manque : affiliation du gerant , il faut le nom prenom du pere et de la mere (nom de jeune fille)
+si la personne selectionne une forme juridique , il faut deduire le rigme fiscal en prepositionnant la list dessus 
+supprimer Régime social du dirigeant
+supprimer domiciliation commerciale
+retirer la partie 4 car la personne ne sait pas exactement quoi choisir 
